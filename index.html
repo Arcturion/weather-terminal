@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payoda - Satellite Images</title>
+    <style>
+        /* Reset and base styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        a { color: inherit; text-decoration: none; }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+
+        /* Header */
+        header { background-color: #2563eb; color: white; padding: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logo { font-size: 1.5rem; font-weight: bold; }
+        nav a { margin-left: 1rem; }
+        nav a:hover { text-decoration: underline; }
+
+        /* Main content */
+        main { padding: 2rem 0; min-height: calc(100vh - 130px); }
+        .sidebar { background-color: #f3f4f6; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input, select { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; }
+        button { width: 100%; padding: 0.5rem; background-color: #2563eb; color: white; border: none; border-radius: 0.25rem; cursor: pointer; }
+        button:hover { background-color: #1d4ed8; }
+        .satellite-image { aspect-ratio: 16 / 9; background-color: #e5e7eb; border-radius: 0.5rem; overflow: hidden; }
+        .satellite-image img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Footer */
+        footer { background-color: #f3f4f6; color: #4b5563; padding: 1rem 0; text-align: center; }
+
+        /* Responsive design */
+        @media (min-width: 1024px) {
+            main .flex { flex-direction: row; gap: 2rem; }
+            .sidebar { width: 24rem; }
+        }
+        @media (max-width: 1023px) {
+            nav { display: none; }
+            .sidebar { margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container flex items-center justify-between">
+            <div class="logo">PayodaCak!</div>
+            <nav>
+                <a href="#">Home</a>
+                <a href="#">Satellite Images</a>
+                <a href="#">Forecasts</a>
+                <a href="#">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container flex flex-col">
+            <aside class="sidebar">
+                <form>
+                    <div class="form-group">
+                        <label for="search">Search Location</label>
+                        <input type="text" id="search" placeholder="Enter location...">
+                    </div>
+                    <div class="form-group">
+                        <label for="image-type">Image Type</label>
+                        <select id="image-type">
+                            <option value="visible">Visible</option>
+                            <option value="infrared">Infrared</option>
+                            <option value="water-vapor">Water Vapor</option>
+                            <option value="composite">Composite</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="time-range">Time Range</label>
+                        <select id="time-range">
+                            <option value="3h">Last 3 hours</option>
+                            <option value="6h">Last 6 hours</option>
+                            <option value="12h">Last 12 hours</option>
+                            <option value="24h" selected>Last 24 hours</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="resolution">Resolution</label>
+                        <select id="resolution">
+                            <option value="low">Low (2000m)</option>
+                            <option value="medium">Medium (1000m)</option>
+                            <option value="high" selected>High (500m)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="overlay">Overlay</label>
+                        <select id="overlay">
+                            <option value="none" selected>None</option>
+                            <option value="borders">Country Borders</option>
+                            <option value="cities">Major Cities</option>
+                            <option value="weather">Weather Systems</option>
+                        </select>
+                    </div>
+                    <button type="submit">Update View</button>
+                </form>
+            </aside>
+
+            <section>
+                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Kalimantan Satellite Imagery</h2>
+                <div class="satellite-image">
+                    <!--<img src="/placeholder.svg?height=720&width=1280" alt="Satellite image of North America">-->
+                    <img src="tes.png" alt="Satellite image Kalimantan">
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                    <p style="font-size: 0.875rem; color: #6b7280;">Last updated: 2024-03-23 15:30 UTC</p>
+                    <button style="width: auto;">Download Image</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 dimaspradana.com All rights reserved.</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Satellite imagery provided by JAXA</p>
+        </div>
+    </footer>
+</body>
+</html>
