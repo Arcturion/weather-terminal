@@ -13,7 +13,7 @@ local_directory = os.path.join('.', year_month_day)
 if not os.path.exists(local_directory):
     os.makedirs(local_directory)
 
-def download_himawari_hsd_files(ftp_server, local_directory, username='dimascours_gmail.com', password='SP+wari8'):
+def download_himawari_hsd_files(ftp_server, local_directory, username='#', password='#'):
     # Determine the current time in UTC
     year_month = now.strftime('%Y%m')
     day = now.strftime('%d')
