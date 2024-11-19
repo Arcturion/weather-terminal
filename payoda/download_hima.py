@@ -1,118 +1,89 @@
 import ftplib
 import os
-import time
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime
 import re
 
-# Set the local directory with yearmonthday format
-now = datetime.utcnow()
-year_month_day = now.strftime('%Y%m%d')
-local_directory = os.path.join('.', year_month_day)
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Ensure the local directory exists
-if not os.path.exists(local_directory):
-    os.makedirs(local_directory)
+def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, username='#', password='#'):
+    """
+    Download Himawari HSD files from the FTP server for a specific time.
 
-def download_himawari_hsd_files(ftp_server, local_directory, username='#', password='#'):
-    # Determine the current time in UTC
-    year_month = now.strftime('%Y%m')
-    day = now.strftime('%d')
-    hour = now.strftime('%H')
-    
-    # Function to change to the FTP directory and handle 550 errors
-    def change_to_ftp_directory(ftp, year_month, day, hour):
+    Args:
+        ftp_server (str): The FTP server address.
+        local_directory (str): The local directory to save the files.
+        target_time (datetime, optional): The target UTC time for file retrieval. Defaults to now.
+        username (str, optional): FTP username. Defaults to '#'.
+        password (str, optional): FTP password. Defaults to '#'.
+    """
+    # Set the target time to now if not provided
+    if target_time is None:
+        target_time = datetime.utcnow()
+
+    # Extract year, month, day, hour, and minute from target_time
+    year_month = target_time.strftime('%Y%m')
+    day = target_time.strftime('%d')
+    hour = target_time.strftime('%H')
+    minute = target_time.strftime('%M')
+
+    # Ensure the local directory exists
+    os.makedirs(local_directory, exist_ok=True)
+
+    try:
+        # Connect to the FTP server
+        ftp = ftplib.FTP(ftp_server)
+        ftp.login(user=username, passwd=password)
+
+        # Navigate to the specified directory
         ftp_directory = f'jma/hsd/{year_month}/{day}/{hour}'
-        try:
-            ftp.cwd(ftp_directory)
-            return True
-        except ftplib.error_perm as e:
-            if "550" in str(e):
-                print(f"Directory {ftp_directory} not found. Checking previous hour...")
-                previous_hour = str(int(hour) - 1).zfill(2)
-                previous_directory = f'jma/hsd/{year_month}/{day}/{previous_hour}'
-                try:
-                    ftp.cwd(previous_directory)
-                    print(f"Changed to previous directory: {previous_directory}")
-                    return True
-                except ftplib.error_perm as e:
-                    print(f"Directory {previous_directory} not found either. Exiting...")
-                    return False
-            else:
-                raise e  # Raise other FTP errors
-        return True
+        logging.info(f"Navigating to directory: {ftp_directory}")
+        ftp.cwd(ftp_directory)
 
-    # Connect to the FTP server
-    ftp = ftplib.FTP(ftp_server)
-    ftp.login(user=username, passwd=password)
-    
-    # Change to the specified directory
-    if not change_to_ftp_directory(ftp, year_month, day, hour):
-        return
+        # Regex to match specific file patterns based on target time
+        # File names include the 4-digit minute in HHMM format
+        file_time_pattern = target_time.strftime('%H%M')
+        pattern = re.compile(
+            rf'^HS_H09_\d{{8}}_{file_time_pattern}_B03_FLDK_R05_S(0[1-9]\d{{2}}|10[01]\d)\.DAT\.bz2$'
+        )
 
-    pattern = re.compile(r'^HS_H09_\d{8}_(\d{4})_B03_FLDK_R05_S(0[1-9]\d{2}|10[01]\d)\.DAT\.bz2$')
-    
-    # Keep trying until we get 10 matching files
-    matching_files = {}
-    while True:
+        # Retrieve the list of files and filter using the pattern
         files = []
-        ftp.retrlines('MLSD', files.append)  # List files
-        
-        # Reset matching_files for each retry
-        matching_files = {}
-        
-        # Find all files matching the pattern
-        for entry in files:
-            facts = dict(item.split('=') for item in entry.split(';') if '=' in item)
-            file = entry.split(';')[-1].strip()
-            match = pattern.match(file)
-            if match:
-                time_key = match.group(1)  # Extract the 4-digit time key (HHMM)
-                file_time = datetime.strptime(facts["modify"], "%Y%m%d%H%M%S")
-                if time_key not in matching_files:
-                    matching_files[time_key] = []
-                matching_files[time_key].append((file, file_time))
-        
-        # Check if we have 10 matching files for the nearest time key
+        ftp.retrlines('NLST', files.append)  # Use 'NLST' for a simpler file list
+        matching_files = [file for file in files if pattern.match(file)]
+
         if matching_files:
-            nearest_time_key = min(matching_files.keys(), key=lambda k: abs(datetime.strptime(k, '%H%M') - now))
-            if len(matching_files[nearest_time_key]) == 10:
-                print(f"Found 10 files for time key {nearest_time_key}. Proceeding to check for existing files...")
-                
-                # Check for already downloaded files
-                downloaded_files = set(os.listdir(local_directory))
-                files_to_download = []
-                
-                for file, _ in matching_files[nearest_time_key]:
-                    if file in downloaded_files:
-                        print(f"File {file} already downloaded. Skipping...")
-                    else:
-                        files_to_download.append(file)
-                
-                if files_to_download:
-                    print(f"{len(files_to_download)} files need to be downloaded.")
-                    break
-                else:
-                    print(f"All files for time key {nearest_time_key} have already been downloaded. Exiting.")
-                    return
-            else:
-                print(f"Found {len(matching_files[nearest_time_key])} files, waiting for 60 seconds...")
+            logging.info(f"Found {len(matching_files)} matching files. Starting download...")
         else:
-            print("No matching files found, waiting for 60 seconds...")
-        
-        # Wait for 30 seconds before trying again
-        time.sleep(60)
-    
-    # Download the files that have not been downloaded
-    for file in files_to_download:
-        local_file_path = os.path.join(local_directory, file)
-        with open(local_file_path, 'wb') as local_file:
-            ftp.retrbinary(f'RETR {file}', local_file.write)
-            print(f'Downloaded: {file}')
-    
-    # Close the FTP connection
-    ftp.quit()
+            logging.warning(f"No matching files found for time {file_time_pattern}.")
+            return
 
-# Example usage
-ftp_server = 'ftp.ptree.jaxa.jp'  # Replace with the actual FTP server
+        # Download each matching file
+        for file in matching_files:
+            local_file_path = os.path.join(local_directory, file)
+            with open(local_file_path, 'wb') as local_file:
+                ftp.retrbinary(f'RETR {file}', local_file.write)
+                logging.info(f"Downloaded: {file}")
 
-download_himawari_hsd_files(ftp_server, local_directory)
+    except ftplib.error_perm as e:
+        logging.error(f"FTP error: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred: {e}")
+    finally:
+        # Ensure the FTP connection is closed
+        try:
+            ftp.quit()
+            logging.info("FTP connection closed.")
+        except:
+            pass
+
+
+'''
+# Example usage:
+ftp_server = 'ftp.ptree.jaxa.jp'
+local_directory = './himawari_data'
+# Example with a specific time
+target_time = datetime(2024, 11, 19, 7, 20)  # UTC time with minutes
+download_himawari_hsd_files(ftp_server, local_directory, target_time)
+'''
