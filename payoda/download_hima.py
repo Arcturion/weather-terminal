@@ -7,7 +7,7 @@ import re
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, username='#', password='#'):
+def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, band='B03', username='dimascours_gmail.com', password='SP+wari8'):
     """
     Download Himawari HSD files from the FTP server for a specific time.
 
@@ -45,7 +45,7 @@ def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, u
         # File names include the 4-digit minute in HHMM format
         file_time_pattern = target_time.strftime('%H%M')
         pattern = re.compile(
-            rf'^HS_H09_\d{{8}}_{file_time_pattern}_B03_FLDK_R05_S(0[1-9]\d{{2}}|10[01]\d)\.DAT\.bz2$'
+            rf'^HS_H09_\d{{8}}_{file_time_pattern}_{band}_FLDK_R05_S(0[1-9]\d{{2}}|10[01]\d)\.DAT\.bz2$'
         )
 
         # Retrieve the list of files and filter using the pattern
