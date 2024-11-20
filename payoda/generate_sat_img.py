@@ -10,7 +10,7 @@ def decompress_bz2(file_path):
         decompressed_data = file.read()
     return decompressed_data
 
-def process_himawari_files(directory, gamma=1.0):
+def process_himawari_files(directory, gamma=1.0, band='B13'):
     # List all downloaded files in the directory
     files = [f for f in os.listdir(directory) if f.endswith('.DAT.bz2')]
     
@@ -26,10 +26,10 @@ def process_himawari_files(directory, gamma=1.0):
     
     # Use Satpy to read and process the decompressed files
     scn = Scene(filenames=decompressed_files, reader='ahi_hsd')
-    scn.load(['B03'])
+    scn.load([band])
     
     # Get the data array for B03
-    data = scn['B03'].values
+    data = scn[band].values
     
     # Crop the image in the middle
     height, width = data.shape
