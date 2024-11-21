@@ -7,7 +7,7 @@ import re
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, band='B13', resolution='20', username='dimascours_gmail.com', password='SP+wari8'):
+def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, band='B13', resolution='20', username='#', password='#'):
     """
     Download Himawari HSD files from the FTP server for a specific time.
 
