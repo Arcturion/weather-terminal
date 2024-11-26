@@ -94,6 +94,7 @@ def download_himawari_hsd_files(ftp_server, local_directory, target_time=None, b
                 pass
 
 
+
 '''
 # Example usage:
 ftp_server = 'ftp.ptree.jaxa.jp'
