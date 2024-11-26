@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-def generate_recent_satellite_image(ftp_server, local_directory, output_directory, band='B13', resolution='20', gamma=0.05, username='dimascours_gmail.com', password='SP+wari8'):
+def generate_recent_satellite_image(ftp_server, local_directory, output_directory, band='B13', resolution='20', gamma=0.05, username='#', password='#'):
     """
 
 
